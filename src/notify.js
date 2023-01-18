@@ -2,7 +2,6 @@ export class Notifier {
     constructor(containerId = null) {
         this.container = containerId !== null ? document.getElementById(containerId)
             : document.getElementsByClassName('notify_queue')[0]
-        console.log(this.container)
     }
     notify(options = {}) {
         new Notification(this.container, options)
