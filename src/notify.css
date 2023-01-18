@@ -1,18 +1,23 @@
 .notify_queue {
     --notification-zindex: 1090;
-    width: -webkit-max-content;
-    width: -moz-max-content;
-    width: max-content;
+    min-width: -webkit-max-content;
+    min-width: -moz-max-content;
+    min-width: max-content;
+    width: 100%;
     max-width: 100%;
     pointer-events: none;
     position: absolute;
     z-index: var(--notification-zindex);
 }
 
+.notify_queue:first-child {
+    margin-top: 40px;
+}
+
 .notify_queue .notification {
-    --notification-background-color: #171717;
-    --notification-text-color: #838c9c;
-    --notification-svg-color: #838c9c;
+    --notification-background-color: #242424;
+    --notification-text-color: #fff;
+    --notification-svg-color: #fff;
     --notification-padding: .8rem;
     background-color: var(--notification-background-color) !important;
     color: var(--notification-text-color) !important;
@@ -24,9 +29,13 @@
     border: none !important;
     transition: transform .3s ease-in-out !important;
     transform: translateX(-100vmax) !important;
-    min-width: 350px !important;
+    width: max-content;
+    max-width: 100%;
+    margin: 0 auto;
     border-radius: 8px !important;
     pointer-events: auto;
+    display: flex;
+    align-items: center;
 }
 
 .notify_queue .notification a {
@@ -61,23 +70,19 @@
 
 .notify_queue .notification svg {
     fill: var(--notification-svg-color);
-    width: 24px;
-    height: 24px;
+    width: 19px;
+    height: 19px;
     transition: all .3s;
 }
 
 .notify_queue .notification button {
     border: none;
-    position: absolute;
     background: transparent;
-    padding: .8rem;
-    right: 0;
-    top: 0;
 }
 
 .notify_queue .notification button svg {
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
 }
 
 .notify_queue .notification button:hover svg {
