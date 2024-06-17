@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Notify demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dist/notify.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        body {
+            background-color: #000;
+        }
+        .btn {
+            background-color: #242424;
+            border: none;
+            padding: .5rem;
+            border-radius: .5rem;
+            color: #dfdada;
+            cursor: pointer;
+            display: block;
+            margin-bottom: .5rem;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <button class="btn" id="btn">Show notification</button>
+    <button class="btn" id="removeFirst">Remove first notification</button>
+    <button class="btn" id="removeLast">Remove last notification</button>
+    <button class="btn" id="removeAll">Remove all notifications</button>
+    <label style="color: #fff; display: block; margin-bottom: .5rem">
+        In animation:
+        <select id="inAnimation">
+            <option>backInLeft</option>
+            <option>backInUp</option>
+            <option>backInDown</option>
+            <option>backInRight</option>
+            <option>bounceIn</option>
+            <option>bounceInLeft</option>
+            <option>bounceInUp</option>
+            <option>bounceInDown</option>
+            <option>bounceInRight</option>
+            <option>rotateIn</option>
+            <option>rotateInLeft</option>
+            <option>rotateInUp</option>
+            <option>rotateInDown</option>
+            <option>rotateInRight</option>
+            <option>shakeX</option>
+            <option>shakeY</option>
+            <option>bounce</option>
+            <option>flash</option>
+            <option>pulse</option>
+            <option>rubberBand</option>
+            <option>headShake</option>
+            <option>swing</option>
+            <option>tada</option>
+            <option>wobble</option>
+            <option>jello</option>
+            <option>heartBeat</option>
+            <option>shakeY</option>
+            <option>shakeY</option>
+            <option>shakeY</option>
+        </select>
+    </label>
+    <label style="color: #fff; display: block; margin-bottom: .5rem">
+        Out animation:
+        <select id="outAnimation">
+            <option>backOutLeft</option>
+            <option>backOutRight</option>
+            <option>backOutUp</option>
+            <option>backOutDown</option>
+            <option>bounceOut</option>
+            <option>bounceOutLeft</option>
+            <option>bounceOutUp</option>
+            <option>bounceOutDown</option>
+            <option>bounceOutRight</option>
+            <option>rotateOut</option>
+            <option>rotateOutLeft</option>
+            <option>rotateOutUp</option>
+            <option>rotateOutDown</option>
+            <option>rotateOutRight</option>
+        </select>
+    </label>
+    <label style="color: #fff; display: block; margin-bottom: .5rem">
+        Position:
+        <select id="position">
+            <option>top-center</option>
+            <option>top-left</option>
+            <option>top-right</option>
+            <option>bottom-center</option>
+            <option>bottom-left</option>
+            <option>bottom-right</option>
+        </select>
+    </label>
+    <label style="color: #fff; display: block; margin-bottom: .5rem">
+        Notification type:
+        <select id="type">
+            <option>info</option>
+            <option>warning</option>
+            <option>error</option>
+            <option>success</option>
+            <option>simple</option>
+        </select>
+    </label>
+    <label style="color: #fff; display: block; margin-bottom: .5rem">
+        Message: <input id="msg" type="text">
+    </label>
+    <label style="color: #fff; display: block; margin-bottom: .5rem">
+        Show progress: <input id="progress" type="checkbox">
+    </label>
+    <label style="color: #fff; display: block; margin-bottom: .5rem">
+        Expand: <input id="expand" type="checkbox">
+    </label>
+    <label style="color: #fff; display: block; margin-bottom: .5rem">
+        Pause on hover: <input id="pause" type="checkbox">
+    </label>
+    <label style="color: #fff; display: block; margin-bottom: .5rem">
+        Notification duration (0 for infinity): <input id="duration" type="number" value="3000">
+    </label>
+</div>
+
+<script lang="js" src="dist/notify.min.js"></script>
+<script lang="js">
+
+    const btn = document.getElementById('btn')
+    const clearFirstBtn = document.getElementById('removeFirst')
+    const clearLastBtn = document.getElementById('removeLast')
+    const clearBtn = document.getElementById('removeAll')
+    const inAnimation = document.getElementById('inAnimation')
+    const outAnimation = document.getElementById('outAnimation')
+    const position = document.getElementById('position')
+    const type = document.getElementById('type')
+    const showProgress = document.getElementById('progress')
+    const duration = document.getElementById('duration')
+    const pause = document.getElementById('pause')
+    const expand = document.getElementById('expand')
+    const msgInput = document.getElementById('msg')
+
+    const notifier = new Notifier(position.value)
+
+    clearLastBtn.onclick = () => notifier.removeLast()
+    clearFirstBtn.onclick = () => notifier.removeFirst()
+    clearBtn.onclick = () => notifier.removeAll()
+
+    let notifyType = type.value
+    let message = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut purus magna, varius semper massa nec, ullamcorper sagittis erat. Duis sed ullamcorper nulla.'
+    const options = {
+        message,
+        pauseOnHover: false,
+        showProgress: false,
+        appearAnimation: inAnimation.value,
+        disappearAnimation: outAnimation.value,
+        expand: expand.checked,
+    }
+
+    msgInput.value = message
+    msgInput.onchange = () => {
+        if (msgInput.value.trim().length === 0) {
+            options.message = message
+        } else options.message = msgInput.value.trim()
+    }
+
+    inAnimation.onchange = () => options.appearAnimation = inAnimation.value
+    outAnimation.onchange = () => options.disappearAnimation = outAnimation.value
+    position.onchange = () => notifier.setPosition(position.value)
+    duration.onchange = () => options.duration = duration.value
+    showProgress.onchange = () => options.showProgress = showProgress.checked
+    pause.onchange = () => options.pauseOnHover = pause.checked
+    type.onchange = () => notifyType = type.value
+    expand.onchange = () => options.expand = expand.checked
+
+    btn.onclick = function () {
+
+        if (options.classes) options.classes = undefined
+        if (options.expand) {
+            options.renderActions = function (close) {
+                const el = createElementFromHTML('<div class="notify__actions"></div>')
+                const buttons = createElementFromHTML('<button class="btn-outline">Ok, i got it</button>\n' +
+                    '                <button class="btn-text">Maybe later</button>')
+
+                buttons[0].onclick = close
+                buttons[1].onclick = close
+
+                el.appendChild(buttons[0])
+                el.appendChild(buttons[0])
+
+                return el
+            }
+        }
+
+        notifier[notifyType](options)
+    }
+</script>
+</body>
+</html>
