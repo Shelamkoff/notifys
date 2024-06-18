@@ -6,7 +6,7 @@ function createElementFromHTML(html) {
         return result[0];
     return result;
 }
-class Notifier {
+export class Notifier {
     constructor(position = null) {
         this._queue = []
         this._position = position;
@@ -127,7 +127,7 @@ class Notifier {
         this.removeByIndex(this._queue.length - 1)
     }
 }
-class Notification {
+export class Notification {
     constructor(options) {
         let _a, _b, _c, _d, _e;
         this.message = options.message;
@@ -252,7 +252,7 @@ class Notification {
     }
 }
 
-class ExpandedNotification extends Notification {
+export class ExpandedNotification extends Notification {
     constructor(options) {
         super(options)
         this.title = options.title || 'Notification'
