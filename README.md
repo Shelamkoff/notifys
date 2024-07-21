@@ -74,4 +74,4 @@ notifier.simple('Fire base notification template')
 Set the values of the appearAnimation/disappearAnimation properties of the options object to one of the animation classes provided by [animate.css](https://animate.style/) without the animate__ prefix
 
 ### Demo
-https://shelamkoff.github.io/notify/
+https://shelamkoff.github.io/notifys/
