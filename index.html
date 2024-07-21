@@ -121,8 +121,9 @@
     </label>
 </div>
 
-<script lang="js" src="dist/notify.min.js"></script>
-<script lang="js">
+<script lang="js" type="module">
+
+    import {createElementFromHTML, Notifier} from "./notify.js";
 
     const btn = document.getElementById('btn')
     const clearFirstBtn = document.getElementById('removeFirst')
