@@ -5,7 +5,7 @@ npm i notifys
 ### Base usage
 
 ```js
-import {Notifier} from 'notify';
+import {Notifier} from 'notifys';
 
 const notifier = new Notifier('top-center')
 
