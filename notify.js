@@ -1,4 +1,4 @@
-function createElementFromHTML(html) {
+export function createElementFromHTML(html) {
     const template = document.createElement('template');
     template.innerHTML = html;
     const result = template.content.children;
@@ -6,6 +6,7 @@ function createElementFromHTML(html) {
         return result[0];
     return result;
 }
+
 export class Notifier {
     constructor(position = null) {
         this._queue = []
@@ -15,6 +16,16 @@ export class Notifier {
         if (typeof position === 'string') this._container.classList.add(position);
 
         document.body.appendChild(this._container)
+    }
+
+    get lastNotify() {
+        if (this._queue.length === 0) return null
+        return this._queue[this._queue.length - 1]
+    }
+
+    get firstNotify() {
+        if (this._queue.length === 0) return null
+        return this._queue[0]
     }
 
     setPosition(position) {
@@ -88,16 +99,6 @@ export class Notifier {
         this.notify(this.__createNotification(options, 'notify__success', 'Success'))
     }
 
-    get lastNotify() {
-        if (this._queue.length === 0) return null
-        return this._queue[this._queue.length-1]
-    }
-
-    get firstNotify() {
-        if (this._queue.length === 0) return null
-        return this._queue[0]
-    }
-
     remove(notification) {
         const index = this._queue.indexOf(notification)
         if (index > -1) {
@@ -127,6 +128,7 @@ export class Notifier {
         this.removeByIndex(this._queue.length - 1)
     }
 }
+
 export class Notification {
     constructor(options) {
         let _a, _b, _c, _d, _e;
@@ -135,14 +137,15 @@ export class Notification {
         this.icon = options.icon;
         this.pauseOnHover = (_b = options.pauseOnHover) !== null && _b !== void 0 ? _b : true;
         this.showProgress = (_c = options.showProgress) !== null && _c !== void 0 ? _c : true;
-        this.appearAnimation = (_d = options.appearAnimation) !== null && _d !== void 0 ? 'animate__'+_d : null;
-        this.disappearAnimation = (_e = options.disappearAnimation) !== null && _e !== void 0 ? 'animate__'+_e : null;
+        this.appearAnimation = (_d = options.appearAnimation) !== null && _d !== void 0 ? 'animate__' + _d : null;
+        this.disappearAnimation = (_e = options.disappearAnimation) !== null && _e !== void 0 ? 'animate__' + _e : null;
         if (options.classes) this.classes = options.classes;
         if (options.renderActions) this.renderActions = (notifier) => {
             return options.renderActions(() => notifier.remove(this));
         }
 
     }
+
     render(notifier) {
         this.notifier = notifier
         this.element = this.doRender(notifier);
@@ -163,8 +166,7 @@ export class Notification {
             this.interval = setInterval(() => {
                 if (duration === 0) {
                     notifier.remove(this)
-                }
-                else {
+                } else {
                     if (isPaused)
                         return;
                     duration -= 10;
@@ -183,6 +185,7 @@ export class Notification {
 
         return this.element;
     }
+
     renderProgressBar(notifier) {
         if (!this.showProgress) return null
         if (this.duration !== 0) {
@@ -192,9 +195,11 @@ export class Notification {
         }
         return null;
     }
+
     renderMessage(notifier) {
         return createElementFromHTML(`<div class="notify__message">${this.message}</div>`)
     }
+
     renderBody(notifier) {
         const el = createElementFromHTML('<div class="notify__body"></div>');
         const icon = this.renderIcon();
@@ -213,12 +218,14 @@ export class Notification {
     renderActions(notifier) {
         return null
     }
+
     renderIcon(notifier) {
         if (this.icon !== undefined) {
             return createElementFromHTML(`<div class="notify__icon__wrapper">${this.icon}</div>`);
         }
         return null;
     }
+
     renderCloseBtn(notifier) {
         const el = document.createElement('button');
         el.setAttribute('class', 'btn-close');
@@ -226,11 +233,13 @@ export class Notification {
 
         return el
     }
+
     doRender(notifier) {
         const el = createElementFromHTML('<div class="notify"></div>');
         el.appendChild(this.renderBody(notifier));
         return el;
     }
+
     removeElement(container) {
         if (this.interval) clearTimeout(this.interval);
         if (this.element !== undefined && this.element !== null) {
@@ -252,11 +261,12 @@ export class Notification {
     }
 }
 
-export class ExpandedNotification extends Notification {
+class ExpandedNotification extends Notification {
     constructor(options) {
         super(options)
         this.title = options.title || 'Notification'
     }
+
     doRender(notifier) {
         const el = createElementFromHTML('<div class="notify notify__expanded"></div>');
 
