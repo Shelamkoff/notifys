@@ -1,309 +1,338 @@
-export function createElementFromHTML(html) {
-    const template = document.createElement('template');
-    template.innerHTML = html;
-    const result = template.content.children;
-    if (result.length === 1)
-        return result[0];
-    return result;
-}
-
+export var Position;
+(function (Position) {
+    Position["topCenter"] = "top-center";
+    Position["topLeft"] = "top-left";
+    Position["topRight"] = "top-right";
+    Position["bottomCenter"] = "bottom-center";
+    Position["bottomRight"] = "bottom-right";
+    Position["bottomLeft"] = "bottom-left";
+})(Position || (Position = {}));
+var NotificationType;
+(function (NotificationType) {
+    NotificationType["error"] = "notify__error";
+    NotificationType["warning"] = "notify__warning";
+    NotificationType["info"] = "notify__info";
+    NotificationType["success"] = "notify__success";
+})(NotificationType || (NotificationType = {}));
+var NotificationTypesIcon;
+(function (NotificationTypesIcon) {
+    NotificationTypesIcon["error"] = "<svg  xmlns=\"http://www.w3.org/2000/svg\"  width=\"24\"  height=\"24\"  viewBox=\"0 0 24 24\"  fill=\"none\"  stroke=\"currentColor\"  stroke-width=\"2\"  stroke-linecap=\"round\"  stroke-linejoin=\"round\"><path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/><path d=\"M12 21a9 9 0 1 1 0 -18a9 9 0 0 1 0 18z\" /><path d=\"M8 16l1 -1l1.5 1l1.5 -1l1.5 1l1.5 -1l1 1\" /><path d=\"M8.5 11.5l1.5 -1.5l-1.5 -1.5\" /><path d=\"M15.5 11.5l-1.5 -1.5l1.5 -1.5\" /></svg>";
+    NotificationTypesIcon["warning"] = "<svg  xmlns=\"http://www.w3.org/2000/svg\"  width=\"24\"  height=\"24\"  viewBox=\"0 0 24 24\"  fill=\"none\"  stroke=\"currentColor\"  stroke-width=\"2\"  stroke-linecap=\"round\"  stroke-linejoin=\"round\"><path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/><path d=\"M12 9v4\" /><path d=\"M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z\" /><path d=\"M12 16h.01\" /></svg>";
+    NotificationTypesIcon["info"] = "<svg  xmlns=\"http://www.w3.org/2000/svg\"  width=\"24\"  height=\"24\"  viewBox=\"0 0 24 24\"  fill=\"none\"  stroke=\"currentColor\"  stroke-width=\"2\"  stroke-linecap=\"round\"  stroke-linejoin=\"round\"><path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/><path d=\"M19.875 6.27c.7 .398 1.13 1.143 1.125 1.948v7.284c0 .809 -.443 1.555 -1.158 1.948l-6.75 4.27a2.269 2.269 0 0 1 -2.184 0l-6.75 -4.27a2.225 2.225 0 0 1 -1.158 -1.948v-7.285c0 -.809 .443 -1.554 1.158 -1.947l6.75 -3.98a2.33 2.33 0 0 1 2.25 0l6.75 3.98h-.033z\" /><path d=\"M12 9h.01\" /><path d=\"M11 12h1v4h1\" /></svg>";
+    NotificationTypesIcon["success"] = "<svg  xmlns=\"http://www.w3.org/2000/svg\"  width=\"24\"  height=\"24\"  viewBox=\"0 0 24 24\"  fill=\"none\"  stroke=\"currentColor\"  stroke-width=\"2\"  stroke-linecap=\"round\"  stroke-linejoin=\"round\"  class=\"icon icon-tabler icons-tabler-outline icon-tabler-checks\"><path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/><path d=\"M7 12l5 5l10 -10\" /><path d=\"M2 12l5 5m5 -5l5 -5\" /></svg>";
+})(NotificationTypesIcon || (NotificationTypesIcon = {}));
 export class Notifier {
-    constructor(position = null) {
-        this._queue = []
-        this._position = position;
-
-        this._container = createElementFromHTML('<div class="notify__container"></div>');
-        if (typeof position === 'string') this._container.classList.add(position);
-
-        document.body.appendChild(this._container)
+    constructor(position = Position.topCenter) {
+        this.queue = [];
+        this.position = position;
+        this.container = document.createElement('div');
+        this.container.classList.add('notify__container', this.position);
+        document.body.appendChild(this.container);
     }
-
     get lastNotify() {
-        if (this._queue.length === 0) return null
-        return this._queue[this._queue.length - 1]
+        if (this.queue.length > 0)
+            return this.queue[this.queue.length - 1];
+        return null;
     }
-
     get firstNotify() {
-        if (this._queue.length === 0) return null
-        return this._queue[0]
+        if (this.queue.length > 0)
+            return this.queue[0];
+        return null;
     }
-
     setPosition(position) {
-        if (!this._position) {
-            this._container.classList.add(this._position = position);
-            return
-        }
-
-        this._container.classList.replace(this._position, position);
-        this._position = position
+        this.container.classList.replace(this.position, position);
+        this.position = position;
     }
-
     simple(options) {
-        return this.notify(this.__createNotification(options, undefined, 'Notification'))
+        return this.notify(this.createNotification(options, undefined, 'Notification'));
     }
-
-    notify(notification) {
-        this._queue.push(notification);
-        this._container.appendChild(notification.render(this));
+    notify(n) {
+        n.onRemoved = (n) => {
+            this.remove(n);
+        };
+        this.queue.push(n);
+        this.container.appendChild(n.render());
+        return n;
     }
-
-    __createNotification(options, type, title) {
+    createNotification(options, type, title) {
         if (typeof options === 'string') {
-            options = {message: options};
+            options = {
+                message: options,
+                duration: 3000
+            };
         }
-
-        if (typeof options.classes === 'string' && !options.classes.includes(type)) {
-            options.classes = options.classes + ' ' + type;
-        } else {
+        if (options.classes !== undefined) {
+            // @ts-ignore
+            if (type !== undefined && options.classes.includes(type)) {
+                options.classes = options.classes + ' ' + type;
+            }
+        }
+        else if (type !== undefined)
             options.classes = type;
+        if (options.expand === true) {
+            if (!options.title)
+                options.title = title;
+            return new ExpandedNotification(Object.assign({}, options));
         }
-
-        if (options.expand) {
-            if (!options.title) options.title = title;
-            return new ExpandedNotification(options)
-        }
-
-        return new Notification(options)
+        return new Notification(Object.assign({}, options));
     }
-
     error(options) {
-        if (!options.icon) {
-            options.icon = '<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 21a9 9 0 1 1 0 -18a9 9 0 0 1 0 18z" /><path d="M8 16l1 -1l1.5 1l1.5 -1l1.5 1l1.5 -1l1 1" /><path d="M8.5 11.5l1.5 -1.5l-1.5 -1.5" /><path d="M15.5 11.5l-1.5 -1.5l1.5 -1.5" /></svg>'
+        if (typeof options === "string") {
+            options = {
+                message: options,
+                icon: NotificationTypesIcon.error,
+            };
         }
-
-        this.notify(this.__createNotification(options, 'notify__error', 'Error'))
+        else if (options.icon === undefined) {
+            options.icon = NotificationTypesIcon.error;
+        }
+        return this.notify(this.createNotification(options, NotificationType.error, 'Error'));
     }
-
     warning(options) {
-
-        if (!options.icon) {
-            options.icon = '<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 9v4" /><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" /><path d="M12 16h.01" /></svg>'
+        if (typeof options === "string") {
+            options = {
+                message: options,
+                icon: NotificationTypesIcon.warning,
+            };
         }
-
-        this.notify(this.__createNotification(options, 'notify__warning', 'Warning'))
+        else if (options.icon === undefined) {
+            options.icon = NotificationTypesIcon.warning;
+        }
+        return this.notify(this.createNotification(options, NotificationType.warning, 'Warning'));
     }
-
     info(options) {
-        if (!options.icon) {
-            options.icon = '<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.875 6.27c.7 .398 1.13 1.143 1.125 1.948v7.284c0 .809 -.443 1.555 -1.158 1.948l-6.75 4.27a2.269 2.269 0 0 1 -2.184 0l-6.75 -4.27a2.225 2.225 0 0 1 -1.158 -1.948v-7.285c0 -.809 .443 -1.554 1.158 -1.947l6.75 -3.98a2.33 2.33 0 0 1 2.25 0l6.75 3.98h-.033z" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>'
+        if (typeof options === "string") {
+            options = {
+                message: options,
+                icon: NotificationTypesIcon.info,
+            };
         }
-
-        this.notify(this.__createNotification(options, 'notify__info', 'Info'))
+        else if (options.icon === undefined) {
+            options.icon = NotificationTypesIcon.info;
+        }
+        return this.notify(this.createNotification(options, NotificationType.info, 'Info'));
     }
-
     success(options) {
-        if (!options.icon) {
-            options.icon = '<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-checks"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 12l5 5l10 -10" /><path d="M2 12l5 5m5 -5l5 -5" /></svg>'
+        if (typeof options === "string") {
+            options = {
+                message: options,
+                icon: NotificationTypesIcon.success
+            };
         }
-
-        this.notify(this.__createNotification(options, 'notify__success', 'Success'))
+        else if (options.icon === undefined) {
+            options.icon = NotificationTypesIcon.success;
+        }
+        return this.notify(this.createNotification(options, NotificationType.success, 'Success'));
     }
-
-    remove(notification) {
-        const index = this._queue.indexOf(notification)
+    remove(n) {
+        const index = this.queue.indexOf(n);
         if (index > -1) {
-            notification.removeElement(this._container);
-            this._queue.splice(index, 1)[0]
-
-            notification.notify = null
+            if (n.element !== undefined) {
+                n.onRemoved = undefined;
+                n.unsetElement();
+            }
+            this.queue.splice(index, 1);
         }
     }
-
     removeByIndex(index) {
-        let n;
-        if ((n = this._queue[index]) !== undefined) this.remove(n)
+        if (this.queue[index] !== undefined)
+            this.remove(this.queue[index]);
     }
-
     removeAll() {
-        while (this._queue.length > 0) {
-            this.removeFirst()
-        }
+        while (this.queue.length > 0)
+            this.removeFirst();
     }
-
     removeFirst() {
-        this.removeByIndex(0)
+        this.removeByIndex(0);
     }
-
     removeLast() {
-        this.removeByIndex(this._queue.length - 1)
+        this.removeByIndex(this.queue.length - 1);
     }
 }
-
 export class Notification {
     constructor(options) {
-        let _a, _b, _c, _d, _e;
-        this.message = options.message;
-        this.duration = (_a = options.duration) !== null && _a !== void 0 ? _a : 3000;
-        this.icon = options.icon;
-        this.pauseOnHover = (_b = options.pauseOnHover) !== null && _b !== void 0 ? _b : true;
-        this.showProgress = (_c = options.showProgress) !== null && _c !== void 0 ? _c : true;
-        this.appearAnimation = (_d = options.appearAnimation) !== null && _d !== void 0 ? 'animate__' + _d : null;
-        this.disappearAnimation = (_e = options.disappearAnimation) !== null && _e !== void 0 ? 'animate__' + _e : null;
-        if (options.classes) this.classes = options.classes;
-        if (options.renderActions) this.renderActions = (notifier) => {
-            return options.renderActions(() => notifier.remove(this));
-        }
-
+        if (options.duration === undefined)
+            options.duration = 3000;
+        if (options.pauseOnHover === undefined)
+            options.pauseOnHover = true;
+        if (options.showProgress === undefined)
+            options.showProgress = true;
+        if (typeof options.appearAnimation === 'string')
+            options.appearAnimation = 'animate__' + options.appearAnimation;
+        if (typeof options.disappearAnimation === 'string')
+            options.disappearAnimation = 'animate__' + options.disappearAnimation;
+        if (options.renderActions !== undefined)
+            this.renderActions = () => {
+                return options.renderActions(() => this.unsetElement());
+            };
+        this._options = Object.assign({}, options);
     }
-
-    render(notifier) {
-        this.notifier = notifier
-        this.element = this.doRender(notifier);
-        if (typeof this.classes === 'string') {
-            this.element.classList.add(...this.classes.split(' '));
+    get options() {
+        return this._options;
+    }
+    get element() {
+        return this._element;
+    }
+    unsetElement() {
+        if (this.intervalId)
+            clearTimeout(this.intervalId);
+        if (this._element !== undefined) {
+            const remove = () => {
+                // @ts-ignore
+                if (this._element.parentElement)
+                    this._element.parentElement.removeChild(this._element);
+                this._element = undefined;
+            };
+            if (typeof this._options.disappearAnimation === "string") {
+                if (typeof this._options.appearAnimation === "string") {
+                    requestAnimationFrame(() => this._element.classList.replace(this._options.appearAnimation, this._options.disappearAnimation));
+                    this._element.onanimationend = remove;
+                }
+                else {
+                    requestAnimationFrame(() => this._element.classList.add(this._options.disappearAnimation));
+                    this._element.onanimationend = remove;
+                }
+            }
+            else
+                remove();
         }
-        const progressBar = this.renderProgressBar(notifier);
-        if (progressBar !== null) {
-            this.element.appendChild(progressBar);
+        if (this._onRemoved !== undefined)
+            this._onRemoved(this);
+    }
+    set onRemoved(value) {
+        this._onRemoved = value;
+    }
+    render() {
+        this._element = this.doRender();
+        if (typeof this._options.classes === 'string') {
+            this._element.classList.add(...this._options.classes.split(' '));
         }
-        let duration = this.duration;
+        const progressBar = this.renderProgressBar();
+        if (progressBar !== null)
+            this._element.appendChild(progressBar);
+        let duration = this._options.duration;
         if (duration > 0) {
             let isPaused = false;
-            if (this.pauseOnHover) {
-                this.element.onmouseover = () => isPaused = true;
-                this.element.onmouseleave = () => isPaused = false;
+            if (this._options.pauseOnHover === true) {
+                this._element.onmouseover = () => isPaused = true;
+                this._element.onmouseleave = () => isPaused = false;
             }
-            this.interval = setInterval(() => {
-                if (duration === 0) {
-                    notifier.remove(this)
-                } else {
+            this.intervalId = setInterval(() => {
+                if (duration === 0)
+                    this.unsetElement();
+                else {
                     if (isPaused)
                         return;
                     duration -= 10;
                     if (progressBar !== null) {
-                        progressBar.style.width = `${duration / this.duration * 100}%`;
+                        progressBar.style.width = `${duration / this._options.duration * 100}%`;
                     }
                 }
             }, 10);
         }
-
-        if (typeof this.appearAnimation === 'string') {
-            this.element.classList.add('animate__animated');
-            requestAnimationFrame(() => this.element.classList.add(this.appearAnimation));
+        if (typeof this._options.appearAnimation === 'string') {
+            this._element.classList.add('animate__animated');
+            // @ts-ignore
+            requestAnimationFrame(() => { var _a; return (_a = this._element) === null || _a === void 0 ? void 0 : _a.classList.add(this._options.appearAnimation); });
         }
-
-
-        return this.element;
+        return this._element;
     }
-
-    renderProgressBar(notifier) {
-        if (!this.showProgress) return null
-        if (this.duration > 0) {
+    renderProgressBar() {
+        if (this._options.showProgress === true && this._options.duration > 0) {
             const el = document.createElement('div');
             el.classList.add('notify__progress');
             return el;
         }
         return null;
     }
-
-    renderMessage(notifier) {
-        return createElementFromHTML(`<div class="notify__message">${this.message}</div>`)
+    renderMessage() {
+        const el = document.createElement('div');
+        el.classList.add('notify__message');
+        el.innerHTML = this._options.message;
+        return el;
     }
-
-    renderBody(notifier) {
-        const el = createElementFromHTML('<div class="notify__body"></div>');
+    renderBody() {
+        const el = document.createElement('div');
+        el.classList.add('notify__body');
         const icon = this.renderIcon();
         if (icon !== null)
             el.appendChild(icon);
         el.appendChild(this.renderMessage());
-        const actions = this.renderActions(notifier);
-        if (actions !== null) el.appendChild(actions)
-        const btn = this.renderCloseBtn()
-        btn.addEventListener('click', () => this.notifier.remove(this))
-        el.appendChild(btn);
-
+        const actions = this.renderActions();
+        if (actions !== null)
+            el.appendChild(actions);
+        const btn = this.renderCloseBtn();
+        if (btn) {
+            btn.addEventListener('click', () => this.unsetElement());
+            el.appendChild(btn);
+        }
         return el;
     }
-
-    renderActions(notifier) {
-        return null
-    }
-
-    renderIcon(notifier) {
-        if (this.icon !== undefined) {
-            return createElementFromHTML(`<div class="notify__icon__wrapper">${this.icon}</div>`);
-        }
+    renderActions() {
         return null;
     }
-
-    renderCloseBtn(notifier) {
+    renderIcon() {
+        if (this._options.icon === undefined)
+            return null;
+        const el = document.createElement('div');
+        el.classList.add('notify__icon__wrapper');
+        el.innerHTML = this._options.icon;
+        return el;
+    }
+    renderCloseBtn() {
         const el = document.createElement('button');
         el.setAttribute('class', 'btn-close');
         el.innerHTML = '<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>';
-
-        return el
-    }
-
-    doRender(notifier) {
-        const el = createElementFromHTML('<div class="notify"></div>');
-        el.appendChild(this.renderBody(notifier));
         return el;
     }
-
-    removeElement(container) {
-        if (this.interval) clearTimeout(this.interval);
-        if (this.element !== undefined && this.element !== null) {
-            const remove = () => {
-                container.removeChild(this.element)
-                this.element = null
-            }
-
-            if (typeof this.disappearAnimation === "string") {
-                if (typeof this.appearAnimation === "string") {
-                    requestAnimationFrame(() => this.element.classList.replace(this.appearAnimation, this.disappearAnimation));
-                    this.element.onanimationend = remove
-                } else {
-                    requestAnimationFrame(() => this.element.classList.add(this.disappearAnimation));
-                    this.element.onanimationend = remove
-                }
-            } else remove()
-        }
+    doRender() {
+        const el = document.createElement('div');
+        el.classList.add('notify');
+        el.appendChild(this.renderBody());
+        return el;
     }
 }
-
 class ExpandedNotification extends Notification {
     constructor(options) {
-        super(options)
-        this.title = options.title || 'Notification'
+        if (options.title === undefined)
+            options.title = 'Notification';
+        super(options);
     }
-
-    doRender(notifier) {
-        const el = createElementFromHTML('<div class="notify notify__expanded"></div>');
-
-        el.appendChild(this.renderHeader(notifier))
-        el.appendChild(this.renderBody(notifier));
-
+    doRender() {
+        const el = document.createElement('div');
+        el.classList.add('notify', 'notify__expanded');
+        el.appendChild(this.renderHeader());
+        el.appendChild(this.renderBody());
         return el;
     }
-
-    renderBody(notifier) {
-        const el = createElementFromHTML('<div class="notify__body"></div>');
-        el.appendChild(this.renderMessage())
-        const actions = this.renderActions(notifier);
-        if (actions !== null) el.appendChild(actions)
-
+    renderBody() {
+        const el = document.createElement('div');
+        el.classList.add('notify__body');
+        el.appendChild(this.renderMessage());
+        const actions = this.renderActions();
+        if (actions !== null)
+            el.appendChild(actions);
         return el;
     }
-
-    renderHeader(notifier) {
-        const el = createElementFromHTML('<div class="notify__header"></div>');
-
+    renderHeader() {
+        const el = document.createElement('div');
+        el.classList.add('notify__header');
         const icon = this.renderIcon();
-        if (icon !== null) el.appendChild(icon);
-
+        if (icon !== null)
+            el.appendChild(icon);
         el.appendChild(this.renderTitle());
-
         const closeBtn = this.renderCloseBtn();
-
         if (closeBtn !== null) {
-            el.appendChild(closeBtn)
-            closeBtn.addEventListener('click', () => this.notifier.remove(this))
+            el.appendChild(closeBtn);
+            closeBtn.addEventListener('click', () => this.unsetElement());
         }
-
-        return el
+        return el;
     }
-
-    renderTitle(notifier) {
-        return createElementFromHTML(`<div class="notify__title">${this.title}</div>`)
+    renderTitle() {
+        const el = document.createElement('div');
+        el.classList.add('notify__title');
+        // @ts-ignore
+        el.innerHTML = this._options.title;
+        return el;
     }
 }
