@@ -36,6 +36,7 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
+    will-change: transform;
 }
 
 .notify__container .notify:first-child {
@@ -151,6 +152,7 @@
     height: 100%;
     background-color: var(--notify-btn-text-bg-color); /*#5e5e5ea8*/
     transform: scale(0);
+    will-change: transform;
     display: block;
     left: 0;
     border-radius: 6px;
@@ -184,6 +186,7 @@
     height: 100%;
     background-color: var(--notify-btn-close-bg-color);
     transform: scale(0);
+    will-change: transform;
     display: block;
     left: 0;
     border-radius: 50%;
@@ -193,6 +196,7 @@
 
 .notify button.btn-close:hover::before {
     transform: scale(1);
+    will-change: transform;
 }
 
 .notify .notify__progress {
