@@ -188,7 +188,7 @@ export class Notification {
 
     renderProgressBar(notifier) {
         if (!this.showProgress) return null
-        if (this.duration !== 0) {
+        if (this.duration > 0) {
             const el = document.createElement('div');
             el.classList.add('notify__progress');
             return el;
