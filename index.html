@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="dist/notify.min.css">
+    <link rel="stylesheet" href="notify.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
         body {
@@ -123,7 +123,8 @@
 
 <script lang="js" type="module">
 
-    import {createElementFromHTML, Notifier} from "./notify.js";
+    import {Notifier, Notification} from "./notify.js";
+
 
     const btn = document.getElementById('btn')
     const clearFirstBtn = document.getElementById('removeFirst')
@@ -140,6 +141,9 @@
     const msgInput = document.getElementById('msg')
 
     const notifier = new Notifier(position.value)
+
+    //notifier.error('error')
+    //notifier.warning('warning')
 
     clearLastBtn.onclick = () => notifier.removeLast()
     clearFirstBtn.onclick = () => notifier.removeFirst()
@@ -177,19 +181,26 @@
         if (options.classes) options.classes = undefined
         if (options.expand) {
             options.renderActions = function (close) {
-                const el = createElementFromHTML('<div class="notify__actions"></div>')
-                const buttons = createElementFromHTML('<button class="btn-outline">Ok, i got it</button>\n' +
-                    '                <button class="btn-text">Maybe later</button>')
+                const el = document.createElement('div')
+                el.classList.add('notify__actions')
 
-                buttons[0].onclick = close
-                buttons[1].onclick = close
+                const btn1 = document.createElement('button')
+                btn1.classList.add('btn-outline')
+                btn1.innerText = 'Ok, i got it'
 
-                el.appendChild(buttons[0])
-                el.appendChild(buttons[0])
+                const btn2 = document.createElement('button')
+                btn2.classList.add('btn-text')
+                btn2.innerText = 'Maybe later'
+
+                btn1.onclick = close
+                btn2.onclick = close
+
+                el.appendChild(btn1)
+                el.appendChild(btn2)
 
                 return el
             }
-        }
+        } else options.renderActions = undefined
 
         notifier[notifyType](options)
     }
