@@ -13,8 +13,13 @@ export function assertPosition(position: string): asserts position is PositionVa
 }
 
 export function normalizeAnimationName(name: string | undefined): string | undefined {
-    if (!name) return undefined;
-    return name.startsWith('animate__') ? name : `animate__${name}`;
+    if (name === undefined) return undefined;
+    const trimmed = name.trim();
+    if (!trimmed) return undefined;
+    if (/\s/.test(trimmed)) {
+        throw new RangeError('Animation name must be a single CSS class name.');
+    }
+    return trimmed.startsWith('animate__') ? trimmed : `animate__${trimmed}`;
 }
 
 export function normalizeDuration(duration: number | undefined): number {
