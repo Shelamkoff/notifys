@@ -1,0 +1,33 @@
+import type { INotification, NormalizedNotificationOptions, NotificationOptions, OnRemovedHandler } from './types.js';
+export declare class Notification implements INotification {
+    protected readonly _options: NormalizedNotificationOptions;
+    protected _element: HTMLElement | undefined;
+    protected _onRemoved: OnRemovedHandler | undefined;
+    private state;
+    private lifetimeTimer;
+    private exitFallbackTimer;
+    private remainingMs;
+    private deadline;
+    private paused;
+    constructor(options: NotificationOptions);
+    get options(): Readonly<NotificationOptions>;
+    get element(): HTMLElement | undefined;
+    set onRemoved(value: OnRemovedHandler | undefined);
+    render(): HTMLElement;
+    unsetElement(): void;
+    destroy(): void;
+    renderProgressBar(): HTMLElement | null;
+    renderMessage(): HTMLElement;
+    renderBody(): HTMLElement;
+    renderActions(): HTMLElement | null;
+    renderIcon(): HTMLElement | null;
+    renderCloseBtn(): HTMLElement | null;
+    protected doRender(): HTMLElement;
+    private startLifetime;
+    private armLifetimeTimer;
+    private clearLifetimeTimer;
+    private clearExitFallbackTimer;
+    private applyAppearAnimation;
+    private configureAccessibility;
+    private finalizeRemoval;
+}

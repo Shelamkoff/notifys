@@ -1,0 +1,51 @@
+{
+  "name": "notifys",
+  "version": "2.0.0",
+  "description": "Small dependency-free browser notification library",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": "./dist/notify.css",
+    "./notify.css": "./dist/notify.css",
+    "./notify.min.css": "./dist/notify.css",
+    "./notify.js": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./notify.min.js": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "./dist/notify.css"
+  ],
+  "scripts": {
+    "clean": "node ./scripts/clean.mjs",
+    "build": "npm run clean && tsc -p tsconfig.json && node ./scripts/copy-assets.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "notification",
+    "toast",
+    "browser",
+    "typescript"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

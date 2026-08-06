@@ -1,0 +1,11 @@
+import { type NotificationOptions, type Position as PositionValue } from './types.js';
+import type { NotificationClass } from './icons.js';
+export declare const DEFAULT_DURATION = 3000;
+export declare const ANIMATION_FALLBACK_BUFFER_MS = 50;
+export declare function assertPosition(position: string): asserts position is PositionValue;
+export declare function normalizeAnimationName(name: string | undefined): string | undefined;
+export declare function normalizeDuration(duration: number | undefined): number;
+export declare function mergeClasses(classes: string | undefined, type: NotificationClass | undefined): string | undefined;
+export declare function withDefaultIcon(options: string | NotificationOptions, icon: string): NotificationOptions;
+export declare function now(): number;
+export declare function maximumAnimationTime(element: HTMLElement): number;
