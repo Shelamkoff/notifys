@@ -11,7 +11,7 @@ export class Notification {
     deadline = 0;
     paused = false;
     constructor(options) {
-        this._options = {
+        this._options = Object.freeze({
             ...options,
             duration: normalizeDuration(options.duration),
             pauseOnHover: options.pauseOnHover ?? true,
@@ -19,7 +19,7 @@ export class Notification {
             allowHtml: options.allowHtml ?? false,
             appearAnimation: normalizeAnimationName(options.appearAnimation),
             disappearAnimation: normalizeAnimationName(options.disappearAnimation),
-        };
+        });
     }
     get options() {
         return this._options;
@@ -57,27 +57,21 @@ export class Notification {
             this.finalizeRemoval();
             return;
         }
+        const appearAnimation = this._options.appearAnimation;
         const disappearAnimation = this._options.disappearAnimation;
         element.classList.add('animate__animated');
+        if (appearAnimation && element.classList.contains(appearAnimation)) {
+            element.classList.remove(appearAnimation);
+        }
+        element.classList.add(disappearAnimation);
         const finish = () => this.finalizeRemoval();
         element.addEventListener('animationend', finish, { once: true });
-        requestAnimationFrame(() => {
-            if (this.state !== 'closing' || this._element !== element)
-                return;
-            const appearAnimation = this._options.appearAnimation;
-            if (appearAnimation && element.classList.contains(appearAnimation)) {
-                element.classList.replace(appearAnimation, disappearAnimation);
-            }
-            else {
-                element.classList.add(disappearAnimation);
-            }
-            const animationTime = maximumAnimationTime(element);
-            if (animationTime <= 0) {
-                queueMicrotask(finish);
-                return;
-            }
-            this.exitFallbackTimer = window.setTimeout(finish, animationTime + ANIMATION_FALLBACK_BUFFER_MS);
-        });
+        const animationTime = maximumAnimationTime(element);
+        if (animationTime <= 0) {
+            queueMicrotask(finish);
+            return;
+        }
+        this.exitFallbackTimer = window.setTimeout(finish, animationTime + ANIMATION_FALLBACK_BUFFER_MS);
     }
     destroy() {
         if (this.state === 'closed')
