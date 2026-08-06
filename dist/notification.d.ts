@@ -1,6 +1,6 @@
 import type { INotification, NormalizedNotificationOptions, NotificationOptions, OnRemovedHandler } from './types.js';
 export declare class Notification implements INotification {
-    protected readonly _options: NormalizedNotificationOptions;
+    protected readonly _options: Readonly<NormalizedNotificationOptions>;
     protected _element: HTMLElement | undefined;
     protected _onRemoved: OnRemovedHandler | undefined;
     private state;
