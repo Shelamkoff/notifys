@@ -3,7 +3,7 @@ import type {INotification, LifecycleState, NormalizedNotificationOptions, Notif
 import {ANIMATION_FALLBACK_BUFFER_MS, maximumAnimationTime, normalizeAnimationName, normalizeDuration, now} from './utils.js';
 
 export class Notification implements INotification {
-    protected readonly _options: NormalizedNotificationOptions;
+    protected readonly _options: Readonly<NormalizedNotificationOptions>;
     protected _element: HTMLElement | undefined;
     protected _onRemoved: OnRemovedHandler | undefined;
 
@@ -15,7 +15,7 @@ export class Notification implements INotification {
     private paused = false;
 
     constructor(options: NotificationOptions) {
-        this._options = {
+        this._options = Object.freeze({
             ...options,
             duration: normalizeDuration(options.duration),
             pauseOnHover: options.pauseOnHover ?? true,
@@ -23,7 +23,7 @@ export class Notification implements INotification {
             allowHtml: options.allowHtml ?? false,
             appearAnimation: normalizeAnimationName(options.appearAnimation),
             disappearAnimation: normalizeAnimationName(options.disappearAnimation),
-        };
+        });
     }
 
     get options(): Readonly<NotificationOptions> {
@@ -70,29 +70,24 @@ export class Notification implements INotification {
             return;
         }
 
+        const appearAnimation = this._options.appearAnimation;
         const disappearAnimation = this._options.disappearAnimation;
         element.classList.add('animate__animated');
+        if (appearAnimation && element.classList.contains(appearAnimation)) {
+            element.classList.remove(appearAnimation);
+        }
+        element.classList.add(disappearAnimation);
+
         const finish = (): void => this.finalizeRemoval();
         element.addEventListener('animationend', finish, {once: true});
 
-        requestAnimationFrame(() => {
-            if (this.state !== 'closing' || this._element !== element) return;
+        const animationTime = maximumAnimationTime(element);
+        if (animationTime <= 0) {
+            queueMicrotask(finish);
+            return;
+        }
 
-            const appearAnimation = this._options.appearAnimation;
-            if (appearAnimation && element.classList.contains(appearAnimation)) {
-                element.classList.replace(appearAnimation, disappearAnimation);
-            } else {
-                element.classList.add(disappearAnimation);
-            }
-
-            const animationTime = maximumAnimationTime(element);
-            if (animationTime <= 0) {
-                queueMicrotask(finish);
-                return;
-            }
-
-            this.exitFallbackTimer = window.setTimeout(finish, animationTime + ANIMATION_FALLBACK_BUFFER_MS);
-        });
+        this.exitFallbackTimer = window.setTimeout(finish, animationTime + ANIMATION_FALLBACK_BUFFER_MS);
     }
 
     destroy(): void {
