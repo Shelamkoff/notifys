@@ -94,7 +94,7 @@ class FakeElement {
             entry.listener.call(this, event);
             if (entry.once) {
                 const current = this.listeners.get(event.type) ?? [];
-                this.listeners.set(type, current.filter(item => item !== entry));
+                this.listeners.set(event.type, current.filter(item => item !== entry));
             }
         }
         return true;
