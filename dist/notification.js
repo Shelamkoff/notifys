@@ -64,14 +64,12 @@ export class Notification {
             element.classList.remove(appearAnimation);
         }
         element.classList.add(disappearAnimation);
-        const finish = () => this.finalizeRemoval();
-        element.addEventListener('animationend', finish, { once: true });
         const animationTime = maximumAnimationTime(element);
         if (animationTime <= 0) {
-            queueMicrotask(finish);
+            queueMicrotask(() => this.finalizeRemoval());
             return;
         }
-        this.exitFallbackTimer = window.setTimeout(finish, animationTime + ANIMATION_FALLBACK_BUFFER_MS);
+        this.exitFallbackTimer = window.setTimeout(() => this.finalizeRemoval(), animationTime + ANIMATION_FALLBACK_BUFFER_MS);
     }
     destroy() {
         if (this.state === 'closed')
