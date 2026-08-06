@@ -286,6 +286,23 @@ test('removal is idempotent', async () => {
     notifier.destroy();
 });
 
+test('destroy also releases notifications already in their exit phase', () => {
+    computedAnimationDuration = '10s';
+    const notifier = new Notifier();
+    const notification = notifier.simple({message: 'closing', duration: 0, disappearAnimation: 'fadeOut'});
+
+    notifier.remove(notification);
+
+    assert.notEqual(notification.element, undefined);
+    assert.equal(notifier.firstNotify, notification);
+
+    notifier.destroy();
+
+    assert.equal(notification.element, undefined);
+    assert.equal(notifier.firstNotify, null);
+    assert.equal(document.body.children.length, 0);
+});
+
 test('destroy immediately releases notifications and container', () => {
     const notifier = new Notifier();
     const notification = notifier.simple({message: 'forever', duration: 0});
