@@ -8,8 +8,13 @@ class FakeClassList {
     add(...tokens) {
         for (const token of tokens) {
             if (!token) throw new Error('Empty class token');
+            if (/\s/.test(token)) throw new Error('Invalid class token');
             this.#tokens.add(token);
         }
+    }
+
+    remove(...tokens) {
+        for (const token of tokens) this.#tokens.delete(token);
     }
 
     contains(token) {
@@ -96,6 +101,9 @@ class FakeElement {
     }
 }
 
+let computedAnimationDuration = '0s';
+let computedAnimationDelay = '0s';
+
 function installDom() {
     const body = new FakeElement('body');
     globalThis.window = globalThis;
@@ -107,8 +115,8 @@ function installDom() {
     };
     globalThis.requestAnimationFrame = callback => setTimeout(() => callback(performance.now()), 0);
     globalThis.getComputedStyle = () => ({
-        animationDuration: '0s',
-        animationDelay: '0s',
+        animationDuration: computedAnimationDuration,
+        animationDelay: computedAnimationDelay,
     });
 }
 
@@ -124,7 +132,14 @@ function findByClass(element, className) {
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 beforeEach(() => {
+    computedAnimationDuration = '0s';
+    computedAnimationDelay = '0s';
     installDom();
+});
+
+test('module can be imported before a DOM is installed', () => {
+    assert.equal(typeof Notifier, 'function');
+    assert.equal(typeof Notification, 'function');
 });
 
 test('accepts string positions while preserving Position constants', () => {
@@ -150,7 +165,25 @@ test('does not mutate caller options and merges semantic classes once', () => {
     assert.equal(notification.options.classes, 'custom notify__error');
     assert.equal(notification.element.classList.contains('custom'), true);
     assert.equal(notification.element.classList.contains('notify__error'), true);
+    assert.equal(Object.isFrozen(notification.options), true);
 
+    notifier.destroy();
+});
+
+test('rejects invalid durations and malformed animation class names', () => {
+    assert.throws(() => new Notification({message: 'nan', duration: Number.NaN}), /finite number/);
+    assert.throws(() => new Notification({message: 'inf', duration: Number.POSITIVE_INFINITY}), /finite number/);
+    assert.throws(() => new Notification({message: 'negative', duration: -1}), /finite number/);
+    assert.throws(() => new Notification({message: 'bad class', appearAnimation: 'fade in'}), /single CSS class/);
+});
+
+test('duration zero stays visible until explicitly removed', async () => {
+    const notifier = new Notifier();
+    const notification = notifier.simple({message: 'persistent', duration: 0});
+    await delay(30);
+    assert.notEqual(notification.element, undefined);
+    notifier.remove(notification);
+    assert.equal(notification.element, undefined);
     notifier.destroy();
 });
 
@@ -186,6 +219,40 @@ test('pauseOnHover suspends and resumes both lifetime and progress state', async
     notifier.destroy();
 });
 
+test('exit cleanup does not depend on requestAnimationFrame', async () => {
+    globalThis.requestAnimationFrame = () => 0;
+    const notifier = new Notifier();
+    const notification = notifier.simple({
+        message: 'close',
+        duration: 0,
+        disappearAnimation: 'fadeOut',
+    });
+
+    notification.unsetElement();
+    await Promise.resolve();
+
+    assert.equal(notification.element, undefined);
+    assert.equal(notifier.firstNotify, null);
+    notifier.destroy();
+});
+
+test('exit animation has a timeout fallback when animationend never arrives', async () => {
+    computedAnimationDuration = '0.02s';
+    const notifier = new Notifier();
+    const notification = notifier.simple({
+        message: 'fallback',
+        duration: 0,
+        disappearAnimation: 'fadeOut',
+    });
+
+    notification.unsetElement();
+    assert.notEqual(notification.element, undefined);
+    await delay(90);
+    assert.equal(notification.element, undefined);
+    assert.equal(notifier.firstNotify, null);
+    notifier.destroy();
+});
+
 test('message content is text by default and HTML is explicit opt-in', () => {
     const notifier = new Notifier();
 
@@ -206,6 +273,34 @@ test('a Notification instance cannot be mounted twice', () => {
     notification.render();
     assert.throws(() => notification.render(), /only be rendered once/);
     notification.destroy();
+});
+
+test('removal is idempotent', async () => {
+    const notifier = new Notifier();
+    const notification = notifier.simple({message: 'once', duration: 0, disappearAnimation: 'fadeOut'});
+    notification.unsetElement();
+    notification.unsetElement();
+    await Promise.resolve();
+    assert.equal(notification.element, undefined);
+    assert.equal(notifier.firstNotify, null);
+    notifier.destroy();
+});
+
+test('destroy also releases notifications already in their exit phase', () => {
+    computedAnimationDuration = '10s';
+    const notifier = new Notifier();
+    const notification = notifier.simple({message: 'closing', duration: 0, disappearAnimation: 'fadeOut'});
+
+    notifier.remove(notification);
+
+    assert.notEqual(notification.element, undefined);
+    assert.equal(notifier.firstNotify, notification);
+
+    notifier.destroy();
+
+    assert.equal(notification.element, undefined);
+    assert.equal(notifier.firstNotify, null);
+    assert.equal(document.body.children.length, 0);
 });
 
 test('destroy immediately releases notifications and container', () => {

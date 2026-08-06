@@ -13,14 +13,14 @@
     },
     "./style.css": "./dist/notify.css",
     "./notify.css": "./dist/notify.css",
-    "./notify.min.css": "./dist/notify.css",
+    "./notify.min.css": "./dist/notify.min.css",
     "./notify.js": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/notify.js"
     },
     "./notify.min.js": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/notify.min.js"
     }
   },
   "files": [
@@ -29,7 +29,8 @@
     "LICENSE"
   ],
   "sideEffects": [
-    "./dist/notify.css"
+    "./dist/notify.css",
+    "./dist/notify.min.css"
   ],
   "scripts": {
     "clean": "node ./scripts/clean.mjs",
@@ -37,6 +38,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && node --test test/*.test.mjs",
     "prepublishOnly": "npm test"
+  },
+  "homepage": "https://shelamkoff.github.io/notifys/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shelamkoff/notifys.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Shelamkoff/notifys/issues"
   },
   "keywords": [
     "notification",
@@ -46,6 +55,6 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^5.8.3"
+    "typescript": "5.8.3"
   }
 }

@@ -74,11 +74,7 @@ export class Notifier {
     }
 
     remove(notification: INotification): void {
-        const index = this.queue.indexOf(notification);
-        if (index < 0) return;
-
-        notification.onRemoved = undefined;
-        this.queue.splice(index, 1);
+        if (!this.queue.includes(notification)) return;
         notification.unsetElement();
     }
 
@@ -88,9 +84,7 @@ export class Notifier {
     }
 
     removeAll(): void {
-        const notifications = this.queue.splice(0);
-        for (const notification of notifications) {
-            notification.onRemoved = undefined;
+        for (const notification of [...this.queue]) {
             notification.unsetElement();
         }
     }

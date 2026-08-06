@@ -8,9 +8,15 @@ export function assertPosition(position) {
     }
 }
 export function normalizeAnimationName(name) {
-    if (!name)
+    if (name === undefined)
         return undefined;
-    return name.startsWith('animate__') ? name : `animate__${name}`;
+    const trimmed = name.trim();
+    if (!trimmed)
+        return undefined;
+    if (/\s/.test(trimmed)) {
+        throw new RangeError('Animation name must be a single CSS class name.');
+    }
+    return trimmed.startsWith('animate__') ? trimmed : `animate__${trimmed}`;
 }
 export function normalizeDuration(duration) {
     const value = duration ?? DEFAULT_DURATION;
